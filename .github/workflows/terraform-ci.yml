@@ -1,0 +1,168 @@
+# =============================================================================
+# CI Terraform / Terragrunt
+# Vérifie le formatage, l'initialisation, la validation, le lint (tflint),
+# le scan de sécurité (tfsec) et produit un `plan` sur les pull requests.
+# L'authentification AWS se fait via OIDC (aucune clé statique).
+# =============================================================================
+name: terraform-ci
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "01-aws-landing-zone/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "01-aws-landing-zone/**"
+
+# Permissions minimales : `id-token` pour OIDC, `contents` en lecture,
+# `pull-requests` pour commenter le plan.
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+env:
+  TF_VERSION: "1.9.5"
+  TG_VERSION: "0.58.12"
+  TFLINT_VERSION: "v0.52.0"
+  AWS_REGION: "eu-west-1"
+  WORKING_DIR: "01-aws-landing-zone"
+
+concurrency:
+  group: terraform-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Contrôles statiques : format, validate, lint, scan de sécurité.
+  # Ne nécessitent pas d'accès AWS.
+  # ---------------------------------------------------------------------------
+  static-checks:
+    name: Contrôles statiques
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout du dépôt
+        uses: actions/checkout@v4
+
+      - name: Installation de Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Vérification du formatage (fmt)
+        working-directory: ${{ env.WORKING_DIR }}
+        run: terraform fmt -recursive -check -diff
+
+      - name: Initialisation des modules (backend désactivé)
+        working-directory: ${{ env.WORKING_DIR }}/terraform/modules
+        run: |
+          for module in */ ; do
+            echo "::group::init ${module}"
+            terraform -chdir="${module}" init -backend=false -input=false
+            echo "::endgroup::"
+          done
+
+      - name: Validation des modules
+        working-directory: ${{ env.WORKING_DIR }}/terraform/modules
+        run: |
+          for module in */ ; do
+            echo "::group::validate ${module}"
+            terraform -chdir="${module}" validate
+            echo "::endgroup::"
+          done
+
+      - name: Installation de TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: ${{ env.TFLINT_VERSION }}
+
+      - name: Lint (tflint)
+        working-directory: ${{ env.WORKING_DIR }}/terraform/modules
+        run: |
+          tflint --init
+          for module in */ ; do
+            echo "::group::tflint ${module}"
+            tflint --chdir="${module}" --format compact
+            echo "::endgroup::"
+          done
+
+      - name: Scan de sécurité (tfsec)
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          working_directory: ${{ env.WORKING_DIR }}/terraform
+          soft_fail: false
+
+  # ---------------------------------------------------------------------------
+  # Plan Terragrunt sur les pull requests.
+  # Authentification AWS via OIDC ; aucun secret de clé d'accès.
+  # ---------------------------------------------------------------------------
+  plan:
+    name: Terragrunt plan
+    runs-on: ubuntu-latest
+    needs: static-checks
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout du dépôt
+        uses: actions/checkout@v4
+
+      - name: Installation de Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Installation de Terragrunt
+        run: |
+          curl -sSLo /usr/local/bin/terragrunt \
+            "https://github.com/gruntwork-io/terragrunt/releases/download/v${TG_VERSION}/terragrunt_linux_amd64"
+          chmod +x /usr/local/bin/terragrunt
+          terragrunt --version
+
+      - name: Authentification AWS via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: gha-terraform-ci
+
+      - name: Terragrunt plan (run-all)
+        working-directory: ${{ env.WORKING_DIR }}/terraform/live
+        run: |
+          terragrunt run-all plan \
+            --terragrunt-non-interactive \
+            --terragrunt-no-color 2>&1 | tee plan_output.txt
+
+      - name: Publication du plan en commentaire de PR
+        uses: actions/github-script@v7
+        if: always()
+        with:
+          script: |
+            const fs = require('fs');
+            const path = '${{ env.WORKING_DIR }}/terraform/live/plan_output.txt';
+            let plan = 'Aucune sortie de plan disponible.';
+            try {
+              plan = fs.readFileSync(path, 'utf8');
+            } catch (e) {
+              core.warning(`Impossible de lire le plan : ${e}`);
+            }
+            const truncated = plan.length > 60000
+              ? plan.substring(0, 60000) + '\n\n... (sortie tronquée) ...'
+              : plan;
+            const body = [
+              '### Terragrunt plan',
+              '<details><summary>Voir le plan</summary>',
+              '',
+              '```hcl',
+              truncated,
+              '```',
+              '</details>',
+            ].join('\n');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
