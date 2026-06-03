@@ -100,8 +100,8 @@ flowchart LR
     S3 -- "déchiffrement" --- KMS
 
     ACT1 -. "analyse comportementale" .-> GD
-    ACT2 -. .-> GD
-    ACT3 -. .-> GD
+    ACT2 -.-> GD
+    ACT3 -.-> GD
     GD --> SH
 
     classDef store fill:#1d8102,stroke:#232f3e,color:#fff;
