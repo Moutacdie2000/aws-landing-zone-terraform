@@ -7,14 +7,9 @@
 name: terraform-ci
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "01-aws-landing-zone/**"
-  pull_request:
-    branches: [main]
-    paths:
-      - "01-aws-landing-zone/**"
+  # Pipeline à déclenchement manuel (Actions → « Run workflow »).
+  # Le job `plan` cible un vrai compte AWS via OIDC (secret AWS_OIDC_ROLE_ARN).
+  workflow_dispatch:
 
 # Permissions minimales : `id-token` pour OIDC, `contents` en lecture,
 # `pull-requests` pour commenter le plan.
@@ -28,7 +23,7 @@ env:
   TG_VERSION: "0.58.12"
   TFLINT_VERSION: "v0.52.0"
   AWS_REGION: "eu-west-1"
-  WORKING_DIR: "01-aws-landing-zone"
+  WORKING_DIR: "."
 
 concurrency:
   group: terraform-ci-${{ github.ref }}
