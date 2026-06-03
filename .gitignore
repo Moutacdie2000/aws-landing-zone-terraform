@@ -1,0 +1,56 @@
+# =============================================================================
+# .gitignore — Terraform / Terragrunt
+# =============================================================================
+
+# Répertoires de travail Terraform
+**/.terraform/*
+.terraform.lock.hcl
+
+# Cache Terragrunt
+**/.terragrunt-cache/
+
+# Fichiers d'état (ne JAMAIS versionner : ils contiennent des secrets)
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Fichiers de plan (peuvent contenir des valeurs sensibles)
+*.tfplan
+*.tfplan.*
+plan_output.txt
+
+# Fichiers de variables locaux et secrets
+*.tfvars
+*.tfvars.json
+!example.tfvars
+!*.auto.tfvars.example
+.terraform.tfstate.lock.info
+
+# Overrides locaux
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Logs de crash Terraform
+crash.log
+crash.*.log
+
+# Fichiers d'environnement et secrets
+.env
+.env.*
+*.pem
+*.key
+
+# Artefacts d'outils
+.tflint.d/
+tfsec-results.*
+trivy-results.*
+
+# Système / éditeurs
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
