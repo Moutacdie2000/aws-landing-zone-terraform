@@ -1,5 +1,5 @@
 # =============================================================================
-# Makefile — Socle Landing Zone multi-comptes
+# Makefile, Socle Landing Zone multi-comptes
 # Cibles utilitaires pour piloter Terragrunt/Terraform localement.
 # Usage : make <cible>  (ex. make plan)
 # =============================================================================

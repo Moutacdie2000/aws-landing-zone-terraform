@@ -1,5 +1,5 @@
 # =============================================================================
-# Live : compte security-audit — composant guardduty
+# Live : compte security-audit, composant guardduty
 # Appelle le module guardduty depuis le compte administrateur délégué afin
 # d'activer GuardDuty pour toute l'organisation.
 # =============================================================================

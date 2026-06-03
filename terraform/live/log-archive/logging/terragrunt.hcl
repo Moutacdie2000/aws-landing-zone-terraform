@@ -1,5 +1,5 @@
 # =============================================================================
-# Live : compte log-archive — composant logging
+# Live : compte log-archive, composant logging
 # Appelle le module logging pour provisionner le bucket S3 chiffré,
 # l'org-trail CloudTrail et AWS Config dans le compte log-archive.
 # =============================================================================

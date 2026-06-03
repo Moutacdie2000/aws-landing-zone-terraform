@@ -1,4 +1,4 @@
-# ADR 0001 — Stratégie multi-comptes plutôt qu'un compte unique
+# ADR 0001, Stratégie multi-comptes plutôt qu'un compte unique
 
 - **Statut** : Accepté
 - **Date** : 2026-01-15
@@ -72,15 +72,15 @@ plafonnent les permissions par OU ; IAM Identity Center fournit l'accès fédér
 
 ## Alternatives envisagées
 
-- **Compte unique avec isolation par IAM/VPC (option A)** — rejetée : l'isolation
+- **Compte unique avec isolation par IAM/VPC (option A)**, rejetée : l'isolation
   repose entièrement sur la justesse des politiques IAM, sans frontière dure ;
   les quotas deviennent bloquants ; la facturation par équipe est fragile ; et
   une compromission expose l'ensemble du périmètre.
-- **AWS Control Tower clé en main** — envisagée puis écartée pour ce socle de
+- **AWS Control Tower clé en main**, envisagée puis écartée pour ce socle de
   démonstration : Control Tower automatise une partie de ce que nous mettons en
   place, mais nous souhaitons **maîtriser et exposer explicitement** chaque
   mécanisme (org-trail, SCP, délégation) en Terraform à des fins pédagogiques et
   de portabilité. Une migration vers Control Tower reste possible ultérieurement.
-- **Comptes séparés sans OU** — rejetée : sans OU, les SCP devraient être
+- **Comptes séparés sans OU**, rejetée : sans OU, les SCP devraient être
   attachées compte par compte, ce qui ne passe pas à l'échelle et nuit à la
   lisibilité de la gouvernance.

@@ -1,4 +1,4 @@
-# ADR 0002 — Terragrunt pour rester DRY et orchestrer les comptes
+# ADR 0002, Terragrunt pour rester DRY et orchestrer les comptes
 
 - **Statut** : Accepté
 - **Date** : 2026-01-16
@@ -73,15 +73,15 @@ les garde réutilisables et testables indépendamment.
 
 ## Alternatives envisagées
 
-- **Terraform brut + workspaces** — rejetée : les workspaces partagent la même
+- **Terraform brut + workspaces**, rejetée : les workspaces partagent la même
   configuration de backend et de provider et conviennent mal à des comptes AWS
   distincts ; la duplication du backend par composant subsiste.
-- **Terraform brut + scripts maison (Makefile/bash) pour le backend** — rejetée :
+- **Terraform brut + scripts maison (Makefile/bash) pour le backend**, rejetée :
   revient à réimplémenter en moins robuste ce que Terragrunt fournit nativement
   (génération, dépendances, run-all).
-- **Terraform Cloud / Spacelift / Env0** — envisagée : plateformes SaaS de
+- **Terraform Cloud / Spacelift / Env0**, envisagée : plateformes SaaS de
   qualité, mais introduisent un coût et une dépendance externe non souhaités pour
   un socle de démonstration auto-hébergé. Terragrunt reste open source et local.
-- **Module racine unique avec `for_each` sur les comptes** — rejetée : concentre
+- **Module racine unique avec `for_each` sur les comptes**, rejetée : concentre
   tout l'état dans un seul backend, augmente le blast radius d'un `apply` et
   complique la délégation par compte.

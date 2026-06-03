@@ -1,4 +1,4 @@
-# Architecture — Socle Landing Zone multi-comptes
+# Architecture, Socle Landing Zone multi-comptes
 
 Ce document décrit l'organisation AWS multi-comptes mise en place par ce socle,
 ainsi que les flux de logs centralisés vers le compte `log-archive`.

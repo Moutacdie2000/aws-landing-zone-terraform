@@ -103,12 +103,12 @@ graph TD
 
 **Flux principaux :**
 
-- **Logs** — un org-trail CloudTrail (multi-régions, validé) et AWS Config de
+- **Logs**, un org-trail CloudTrail (multi-régions, validé) et AWS Config de
   chaque compte écrivent, chiffrés via KMS, dans un bucket S3 unique du compte
   `log-archive`, versionné et protégé contre la suppression par une SCP.
-- **Menaces** — GuardDuty est activé au niveau de l'organisation depuis le compte
+- **Menaces**, GuardDuty est activé au niveau de l'organisation depuis le compte
   `security-audit` ; les nouveaux comptes sont enrôlés automatiquement.
-- **Garde-fous** — les SCP appliquées aux OU plafonnent les permissions
+- **Garde-fous**, les SCP appliquées aux OU plafonnent les permissions
   (régions autorisées, interdiction du root, protection des services de
   sécurité et des buckets de logs).
 
@@ -257,29 +257,29 @@ et les comptes d'abord, puis le logging et GuardDuty qui en dépendent.
 
 ## 🔑 Points clés d'implémentation
 
-- **Service Control Policies (4 garde-fous)** — `terraform/modules/scp/main.tf` :
+- **Service Control Policies (4 garde-fous)**, `terraform/modules/scp/main.tf` :
   interdiction de désactiver CloudTrail/GuardDuty/Config/Security Hub,
   restriction aux régions autorisées (avec exception des services globaux),
   interdiction de l'utilisateur root, et protection des buckets de logs contre
   la suppression et l'altération.
 
-- **Logging centralisé & immuable** — `terraform/modules/logging/main.tf` : un
+- **Logging centralisé & immuable**, `terraform/modules/logging/main.tf` : un
   org-trail multi-régions avec validation des fichiers, un bucket S3 chiffré KMS
   (rotation activée), versionné, bloquant l'accès public et le trafic non TLS,
   doté d'un cycle de vie (IA → Glacier → expiration ~7 ans). AWS Config y livre
   ses snapshots et son historique.
 
-- **Séparation des comptes** — `terraform/modules/organizations/main.tf` : compte
+- **Séparation des comptes**, `terraform/modules/organizations/main.tf` : compte
   de gestion sans charge applicative, `log-archive` et `security-audit` séparés
   (stockage des preuves ≠ analyse), workloads isolés par environnement.
   `security-audit` est administrateur délégué de GuardDuty, Config et Security
   Hub.
 
-- **OIDC, zéro clé statique** — `.github/workflows/terraform-ci.yml` : la CI
+- **OIDC, zéro clé statique**, `.github/workflows/terraform-ci.yml` : la CI
   assume un rôle AWS via `aws-actions/configure-aws-credentials` avec
   `id-token: write`. Aucune `AWS_ACCESS_KEY_ID` n'est stockée dans GitHub.
 
-- **DRY via Terragrunt** — `terraform/live/terragrunt.hcl` : backend S3 + verrou
+- **DRY via Terragrunt**, `terraform/live/terragrunt.hcl` : backend S3 + verrou
   DynamoDB définis une fois, provider et versions **générés**, clés d'état
   dérivées du chemin, dépendances déclarées entre composants.
 
@@ -351,11 +351,11 @@ make destroy    # terragrunt run-all destroy
 
 Pile de validation, exécutée localement et en CI :
 
-- `terraform fmt -recursive -check` — formatage homogène.
-- `terraform validate` (par module) — cohérence syntaxique et de typage.
-- `tflint` — bonnes pratiques et erreurs courantes (provider AWS).
-- `tfsec` — scan de sécurité statique (chiffrement, accès public, etc.).
-- `terragrunt run-all plan` — plan de bout en bout sur les PR, avec
+- `terraform fmt -recursive -check`, formatage homogène.
+- `terraform validate` (par module), cohérence syntaxique et de typage.
+- `tflint`, bonnes pratiques et erreurs courantes (provider AWS).
+- `tfsec`, scan de sécurité statique (chiffrement, accès public, etc.).
+- `terragrunt run-all plan`, plan de bout en bout sur les PR, avec
   `mock_outputs` pour résoudre les dépendances hors ligne, publié en commentaire
   de pull request.
 

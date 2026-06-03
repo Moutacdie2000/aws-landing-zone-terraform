@@ -295,7 +295,7 @@ resource "aws_cloudtrail" "org" {
 }
 
 # -----------------------------------------------------------------------------
-# AWS Config — enregistreur + canal de livraison
+# AWS Config, enregistreur + canal de livraison
 # -----------------------------------------------------------------------------
 data "aws_iam_policy_document" "config_assume" {
   statement {

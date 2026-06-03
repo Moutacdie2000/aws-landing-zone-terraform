@@ -6,7 +6,7 @@
 # =============================================================================
 
 # -----------------------------------------------------------------------------
-# SCP 1 — Protéger les services de sécurité
+# SCP 1, Protéger les services de sécurité
 # Interdit de désactiver ou d'altérer CloudTrail, GuardDuty, AWS Config et
 # Security Hub, quel que soit l'utilisateur.
 # -----------------------------------------------------------------------------
@@ -72,7 +72,7 @@ resource "aws_organizations_policy" "protect_security_services" {
 }
 
 # -----------------------------------------------------------------------------
-# SCP 2 — Restreindre les régions autorisées
+# SCP 2, Restreindre les régions autorisées
 # Refuse toute action en dehors des régions approuvées. Les services globaux
 # (IAM, Organizations, CloudFront, Route 53, Support…) sont explicitement
 # exclus du refus car ils s'opèrent dans us-east-1.
@@ -131,7 +131,7 @@ resource "aws_organizations_policy" "region_restriction" {
 }
 
 # -----------------------------------------------------------------------------
-# SCP 3 — Interdire l'usage de l'utilisateur root
+# SCP 3, Interdire l'usage de l'utilisateur root
 # Bloque toute action effectuée avec les identifiants root des comptes membres
 # (sauf le compte de gestion, non ciblé par cette SCP).
 # -----------------------------------------------------------------------------
@@ -160,7 +160,7 @@ resource "aws_organizations_policy" "deny_root_user" {
 }
 
 # -----------------------------------------------------------------------------
-# SCP 4 — Protéger les buckets de logs
+# SCP 4, Protéger les buckets de logs
 # Refuse la suppression des buckets de logs et de leurs objets, ainsi que
 # l'affaiblissement de leur chiffrement ou de leur configuration.
 # -----------------------------------------------------------------------------
